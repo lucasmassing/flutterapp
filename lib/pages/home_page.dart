@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:flutterapp/models/user_model.dart';
 import 'package:flutterapp/pages/form_user_page.dart';
+import 'package:flutterapp/repositories/users_repository.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -10,14 +12,50 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  List<String> userList = ["user1", "user2", "user3"];
+  final repository = UsersRepository();
+  
+  late Future<List<UserModel>> userList;
+
+  Future<List<UserModel>> fetchUsers() async {
+    return await repository.getUsers();
+  }
+
+  @override
+  void initState() {
+    userList = fetchUsers();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Lista de usuários")),
-      body: ListView.builder(
+      body: FutureBuilder(
+        future: userList, 
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting){
+            return Center(child: CircularProgressIndicator(),);
+          }
+          return buildListViewUsers(snapshot.data);
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => FormUserPage(), // rota criada para puxar no cadastro de novos usuários
+            )
+          );
+        },
+        child: Icon(Icons.add),
+      ),
+    );
+  }
+
+  Widget buildListViewUsers(userList){
+    return ListView.builder(
         itemCount: userList.length,
         itemBuilder: (context, index) {
           return Card(
@@ -44,25 +82,13 @@ class _HomePageState extends State<HomePage> {
               ),
               child: ListTile(
                 leading: const CircleAvatar(child: Text("US")),
-                title: Text(userList[index]),
-                subtitle: const Text("email@email.com"),
-                trailing: const Icon(Icons.arrow_forward_ios),
+                title: Text(userList[index].name ?? ''),
+                subtitle: Text(userList[index].email ?? ''),
+                trailing: Icon(Icons.arrow_forward_ios),
               ),
             ),
           );
         },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => FormUserPage(), // rota criada para puxar no cadastro de novos usuários
-            )
-          );
-        },
-        child: Icon(Icons.add),
-      ),
-    );
+      );
   }
 }

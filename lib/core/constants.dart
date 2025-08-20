@@ -1,0 +1,1 @@
+const baseURLMockApi = 'https://68a4fd742a3deed2960c26d1.mockapi.io/';

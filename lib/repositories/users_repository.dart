@@ -30,6 +30,15 @@ class UsersRepository {
     }
   }
 
+  UpdateUser(UserModel userModel) async {
+    final url = '$urlBaseApi/${userModel.id}';
+    final json = jsonEncode(UserModel.toJson(userModel));
+    var response = await http.put(Uri.parse(url), body: json);
+    if (response.statusCode != 200) {
+      throw 'Problemas ao atualizar usuário';
+    }
+  }
+
   deleteUser(String id) async {
     final url = '$urlBaseApi/$id';
     var response = await http.delete(Uri.parse(url));

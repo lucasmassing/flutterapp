@@ -3,7 +3,9 @@ import 'package:flutterapp/models/user_model.dart';
 import 'package:flutterapp/repositories/users_repository.dart';
 
 class FormUserPage extends StatefulWidget {
-  const FormUserPage({super.key});
+  FormUserPage({super.key, this.userEdit});
+
+  UserModel? userEdit;
 
   @override
   State<FormUserPage> createState() => _FormUserPageState();
@@ -13,7 +15,29 @@ class _FormUserPageState extends State<FormUserPage> {
   TextEditingController txtNameController = TextEditingController();
   TextEditingController txtEmailController = TextEditingController();
   TextEditingController txtPhotoController = TextEditingController();
+
+  String? id;
+
   final formKey = GlobalKey<FormState>();
+
+  updateUser() async {
+    try {
+      await repository.UpdateUser(
+        UserModel(
+          id: id,
+          name: txtNameController.text,
+          email: txtEmailController.text,
+          avatar: txtPhotoController.text,
+        ),
+      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Dados salvos!')));
+      Navigator.pop(context);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+    }
+  }
 
   //instanciar o repositório
   final repository = UsersRepository();
@@ -36,6 +60,17 @@ class _FormUserPageState extends State<FormUserPage> {
     } catch (e) {
       //mostrar mensagem de erro
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.userEdit != null) {
+      txtNameController.text = widget.userEdit?.name ?? '';
+      txtEmailController.text = widget.userEdit?.email ?? '';
+      txtPhotoController.text = widget.userEdit?.avatar ?? '';
+      id = widget.userEdit?.id ?? '';
     }
   }
 
@@ -85,9 +120,11 @@ class _FormUserPageState extends State<FormUserPage> {
               ElevatedButton(
                 onPressed: () async {
                   if (formKey.currentState!.validate()) {
-                    // vai validar todos os validators do FormTextField
-                    // pegar os valores e salvar no DB
-                    saveUser();
+                    if (widget.userEdit != null){
+                      updateUser();
+                    } else{
+                      saveUser();
+                    }
                   }
                 },
                 child: Text("Salvar"),

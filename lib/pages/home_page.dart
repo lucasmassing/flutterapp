@@ -103,7 +103,19 @@ class _HomePageState extends State<HomePage> {
               motion: ScrollMotion(),
               children: [
                 SlidableAction(
-                  onPressed: (context) {},
+                  onPressed: (context) async {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            FormUserPage(userEdit: userList[index]),
+                      ),
+                    );
+                    setState(() {
+                      userList = fetchUsers();
+                    });
+                  },
+
                   icon: Icons.edit,
                   backgroundColor: Colors.grey,
                   foregroundColor: Colors.black,
@@ -121,7 +133,8 @@ class _HomePageState extends State<HomePage> {
               ],
             ),
             child: ListTile(
-              leading: const CircleAvatar(child: Text("US")),
+              leading: CircleAvatar(
+                child: Image.network(userList[index].avatar)),
               title: Text(userList[index].name ?? ''),
               subtitle: Text(userList[index].email ?? ''),
               trailing: Icon(Icons.arrow_forward_ios),
